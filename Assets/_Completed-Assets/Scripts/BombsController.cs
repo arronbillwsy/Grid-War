@@ -23,25 +23,52 @@ public class BombsController : MonoBehaviour {
 		timeleft -= Time.deltaTime;
 		//renderer.enabled = !renderer.enabled;
 		if (timeleft <= 0) {
-			if (status == "random") {
-				int rand_index = Random.Range ((int)0, (int)4);
-				Vector3[] move = { Vector3.up, Vector3.right, Vector3.down, Vector2.left };
-				rb2d.velocity = speed * move [rand_index];
-			} else {
-				Vector2 pointA = new Vector2 (transform.position.x-3.5, transform.position.y-3.5);
-				Vector2 pointB = new Vector2 (transform.position.x+3.5, transform.position.y+3.5);
-				Collider2D[] obj_near = Physics2D.OverlapAreaAll(pointA, pointB);
+			status = "random";
+			Vector2 pointA = new Vector2 (transform.position.x-10f, transform.position.y-10f);
+			Vector2 pointB = new Vector2 (transform.position.x+10f, transform.position.y+10f);
+			Collider2D[] obj_near = Physics2D.OverlapAreaAll(pointA, pointB);
 
-				foreach (Collider2D obj in obj_near) {
-					if (obj.tag == "player" || obj.tag == "AI_player") {
-						if (Vector2.Distance (transform.position, obj) <= 1.5f) {
-							obj.gameObject.SetActive (false);
+			foreach (Collider2D obj in obj_near) {
+				if (obj.tag == "Player" || obj.tag == "AI_player") {
+					status = "chase";
+					Debug.Log ("chase");
+					if (Vector2.Distance (transform.position, obj.transform.position) <= 4.4f) {
+						Debug.Log ("explosion");
+						obj.gameObject.SetActive (false);
+						gameObject.SetActive (false);
+					} else {
+						var targetPosition = obj.transform.position;
+						var distance = Vector2.Distance (transform.position, targetPosition);
+						Debug.Log ("distance");
+						Debug.Log (transform.position);
+						Debug.Log (obj.transform.position);
+
+						float r_dir = Random.Range (-1.0f, 1.0f);
+						if (r_dir >= 0) {
+							if (transform.position.x < targetPosition.x) {
+								rb2d.velocity = speed * Vector3.right;
+							} else {
+								rb2d.velocity = speed * Vector3.left;
+							}
 						} else {
-							Debug.Log ('temp');
+							if (transform.position.y < targetPosition.y) {
+								rb2d.velocity = speed * Vector3.up;
+							} else {
+								rb2d.velocity = speed * Vector3.down;
+							}
 						}
+						break;
 					}
 				}
 			}
+
+			if (status == "random") {
+				Debug.Log ("random");
+				int rand_index = Random.Range (0, 4);
+				Vector3[] move = { Vector3.up, Vector3.right, Vector3.down, Vector2.left };
+				rb2d.velocity = speed * move [rand_index];
+			}
+
 			timeleft = 2f;
 		}
 	}
